@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+.env
+.env.local
+.env.test
+prisma/dev.db
+prisma/dev.db-journal
+*.log
+.git
+.DS_Store
+ml-service
+docs
+tests
+coverage
+.claude

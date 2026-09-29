@@ -1,0 +1,19 @@
+node_modules
+.next
+.swc
+out
+.env
+.env.local
+.env.test
+*.log
+.DS_Store
+coverage
+tsconfig.tsbuildinfo
+
+# Python / ml-service
+__pycache__
+*.pyc
+ml-service/venv
+ml-service/models/
+ml-service/.pytest_cache
+ml-service/.coverage

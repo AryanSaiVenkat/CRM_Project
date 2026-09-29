@@ -1,0 +1,118 @@
+// Nexus CRM Lite — data model (PRD v3.0 §7.2)
+// PostgreSQL, matching PRD §5.3 (Neon/Supabase in the deployed demo) and
+// §11.1 (Docker Compose Postgres for local development).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  STAFF
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  LOST
+}
+
+enum DealStage {
+  NEW
+  CONTACTED
+  PROPOSAL
+  WON
+  LOST
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(OWNER)
+  leads        Lead[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// FR-01 / FR-02
+model Lead {
+  id           String     @id @default(uuid())
+  name         String
+  email        String?
+  phone        String?
+  source       String?
+  status       LeadStatus @default(NEW)
+  aiScore      Float? // FR-AI-01
+  aiTopDrivers Json? // FR-AI-03 — top 2-3 SHAP-derived drivers, plain language
+  ownerId      String
+  owner        User       @relation(fields: [ownerId], references: [id])
+  contact      Contact?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+// FR-06 — unified customer record
+model Contact {
+  id        String   @id @default(uuid())
+  leadId    String?  @unique
+  lead      Lead?    @relation(fields: [leadId], references: [id])
+  name      String
+  email     String?
+  phone     String?
+  deals     Deal[]
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// FR-03 — pipeline
+model Deal {
+  id        String    @id @default(uuid())
+  title     String
+  stage     DealStage @default(NEW)
+  amount    Float     @default(0)
+  contactId String
+  contact   Contact   @relation(fields: [contactId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([contactId])
+  @@index([stage])
+}
+
+// FR-04 / FR-AI-02
+model Ticket {
+  id        String        @id @default(uuid())
+  subject   String
+  body      String
+  status    TicketStatus  @default(OPEN)
+  sentiment Sentiment?
+  contactId String
+  contact   Contact       @relation(fields: [contactId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([contactId])
+  @@index([status])
+}

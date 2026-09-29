@@ -1,0 +1,6 @@
+node_modules
+.next
+coverage
+ml-service
+prisma/migrations
+package-lock.json

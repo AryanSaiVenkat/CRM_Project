@@ -1,0 +1,10 @@
+[run]
+source = .
+omit =
+    venv/*
+    tests/*
+    conftest.py
+    train_lead_score.py
+
+[report]
+show_missing = True
